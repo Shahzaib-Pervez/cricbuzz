@@ -268,7 +268,7 @@ void LoginForm::clearForm()
 // LoginWidget Implementation
 LoginWidget::LoginWidget(QWidget *parent)
     : QWidget(parent)
-    , m_firebaseApiKey("YOUR_FIREBASE_API_KEY_HERE") // Replace with your actual API key
+    , m_firebaseApiKey("AIzaSyAkWEZyrIT_xpw5dA1fmAaNBnaXO-Dnpog") // Replace with your actual API key
 {
     setAttribute(Qt::WA_StyledBackground, true);
     setObjectName("loginWidgetBase");

@@ -1,7 +1,18 @@
 #include "mainwindow.h"
+#include "loginwidget.h"
+#include "firebaseauth.h"  // Make sure this include matches your actual file name (case-sensitive)
+#include "dashboard.h"     // Add this include for Dashboard
 #include <QApplication>
 #include <QStackedLayout>
 #include <QTimer>
+#include <QDateTime>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QLabel>
+#include <QPushButton>
+#include <QFrame>
+#include <QDebug>
+#include <QMessageBox>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -22,6 +33,7 @@ MainWindow::MainWindow(QWidget *parent)
     , m_userInfoLabel(nullptr)
     , m_logoutButton(nullptr)
     , m_firebaseAuth(nullptr)
+    , m_dashboard(nullptr)  // Initialize dashboard pointer
 {
     setupUI();
     setupFirebaseAuth();
@@ -34,14 +46,49 @@ MainWindow::MainWindow(QWidget *parent)
 MainWindow::~MainWindow()
 {
     // Qt will handle cleanup of child widgets automatically
+    if (m_dashboard) {
+        m_dashboard->deleteLater();
+    }
+}
+
+void MainWindow::setupFirebaseAuth()
+{
+    // Initialize Firebase Auth with your API key
+    m_firebaseAuth = new FirebaseAuth("AIzaSyAkWEZyrIT_xpw5dA1fmAaNBnaXO-Dnpog", this);
+
+    // Connect Firebase signals - Use the correct syntax
+    connect(m_firebaseAuth, &FirebaseAuth::signInSuccess,
+            this, [this](const QString &idToken, const QString &refreshToken,
+                   const QString &localId, const QString &email, const QString &displayName) {
+                Q_UNUSED(refreshToken)
+                Q_UNUSED(displayName)
+                onAuthenticationSuccessful(localId, email, idToken);
+            });
+
+    connect(m_firebaseAuth, &FirebaseAuth::signInError,
+            this, [this](const QString &error) {
+                onAuthenticationFailed(error);
+            });
+
+    connect(m_firebaseAuth, &FirebaseAuth::signUpSuccess,
+            this, [this](const QString &idToken, const QString &refreshToken,
+                   const QString &localId, const QString &email) {
+                Q_UNUSED(refreshToken)
+                onAuthenticationSuccessful(localId, email, idToken);
+            });
+
+    connect(m_firebaseAuth, &FirebaseAuth::signUpError,
+            this, [this](const QString &error) {
+                onAuthenticationFailed(error);
+            });
 }
 
 void MainWindow::setupUI()
 {
     // Set window properties
     setWindowTitle("Cricket App");
-    setFixedSize(850, 600); // Same size as LoginWidget
-    setWindowFlags(Qt::FramelessWindowHint); // Remove window frame like LoginWidget
+    setFixedSize(850, 600);
+    setWindowFlags(Qt::FramelessWindowHint);
 
     // Create central widget with stacked layout
     m_centralWidget = new QWidget(this);
@@ -49,10 +96,10 @@ void MainWindow::setupUI()
 
     QStackedLayout *stackedLayout = new QStackedLayout(m_centralWidget);
 
-    // Setup login widget (your existing beautiful UI)
+    // Setup login widget
     setupLoginForm();
 
-    // Setup main interface (after login)
+    // Setup main interface
     setupMainInterface();
 
     // Add both widgets to stacked layout
@@ -65,13 +112,14 @@ void MainWindow::setupUI()
 
 void MainWindow::setupLoginForm()
 {
-    // Use your existing LoginWidget instead of creating new UI
     m_loginWidget = new LoginWidget();
 
     // Connect LoginWidget signals to MainWindow slots
     connect(m_loginWidget, &LoginWidget::userAuthenticated,
-            this, [this](const QString &uid, const QString &idToken, const QString & /*refreshToken*/,
-                   const QString &email, const QString & /*displayName*/) {
+            this, [this](const QString &uid, const QString &idToken, const QString &refreshToken,
+                   const QString &email, const QString &displayName) {
+                Q_UNUSED(refreshToken)
+                Q_UNUSED(displayName)
                 onAuthenticationSuccessful(uid, email, idToken);
             });
 
@@ -87,7 +135,7 @@ void MainWindow::setupLoginForm()
 
 void MainWindow::setupMainInterface()
 {
-    // Create main interface widget (shown after login)
+    // Create main interface widget
     m_mainWidget = new QWidget();
     m_mainWidget->setStyleSheet("background-color: #F8F9FA;");
 
@@ -108,7 +156,7 @@ void MainWindow::setupMainInterface()
         margin: 20px 0;
     )");
 
-    // Window controls (minimize, close)
+    // Window controls
     QWidget *controlsWidget = createWindowControls();
 
     headerLayout->addWidget(m_welcomeLabel);
@@ -165,11 +213,11 @@ void MainWindow::setupMainInterface()
     )");
     m_logoutButton->setCursor(Qt::PointingHandCursor);
 
-    // Dashboard button (placeholder)
-    QPushButton *dashboardButton = new QPushButton("Dashboard");
+    // Dashboard button - Now opens full Dashboard
+    QPushButton *dashboardButton = new QPushButton("Open Dashboard");
     dashboardButton->setStyleSheet(R"(
         QPushButton {
-            background-color: #3498DB;
+            background-color: #27AE60;
             color: white;
             border: none;
             border-radius: 8px;
@@ -179,13 +227,14 @@ void MainWindow::setupMainInterface()
             min-width: 120px;
         }
         QPushButton:hover {
-            background-color: #2980B9;
+            background-color: #229954;
         }
         QPushButton:pressed {
-            background-color: #21618C;
+            background-color: #1E8449;
         }
     )");
     dashboardButton->setCursor(Qt::PointingHandCursor);
+    dashboardButton->setToolTip("Open Cricket Dashboard");
 
     actionsLayout->addWidget(dashboardButton);
     actionsLayout->addStretch();
@@ -197,8 +246,9 @@ void MainWindow::setupMainInterface()
     m_mainInterfaceLayout->addStretch();
     m_mainInterfaceLayout->addWidget(actionsWidget);
 
-    // Connect logout signal
+    // Connect signals
     connect(m_logoutButton, &QPushButton::clicked, this, &MainWindow::onLogoutButtonClicked);
+    connect(dashboardButton, &QPushButton::clicked, this, &MainWindow::openDashboard);
 }
 
 QWidget* MainWindow::createWindowControls()
@@ -257,15 +307,53 @@ QWidget* MainWindow::createWindowControls()
     return controlWidget;
 }
 
-void MainWindow::setupFirebaseAuth()
+void MainWindow::openDashboard()
 {
-    // Firebase Auth is handled by LoginWidget, so we don't need to create another instance
-    // The LoginWidget already has Firebase integration with your API key
+    if (!m_dashboard) {
+        // Create dashboard
+        m_dashboard = new Dashboard();
+        m_dashboard->setUserInfo(m_currentUserId, m_currentUserEmail);
+
+        // Connect dashboard logout signal
+        connect(m_dashboard, &Dashboard::logoutRequested, this, [this]() {
+            // Handle dashboard logout
+            if (m_dashboard) {
+                m_dashboard->close();
+                m_dashboard->deleteLater();
+                m_dashboard = nullptr;
+            }
+
+            // Clear user data
+            m_currentUserId.clear();
+            m_currentUserEmail.clear();
+            m_currentIdToken.clear();
+
+            // Clear LoginWidget passwords for security
+            if (m_loginWidget) {
+                m_loginWidget->clearLoginPassword();
+                m_loginWidget->clearRegistrationPasswords();
+            }
+
+            // Show main window with login
+            this->show();
+            showLoginForm();
+        });
+    }
+
+    // Show dashboard and hide main window
+    m_dashboard->show();
+    this->hide();
+}
+
+void MainWindow::showDashboardPlaceholder()
+{
+    // This method is no longer needed but kept for compatibility
+    openDashboard();
 }
 
 void MainWindow::onLoginButtonClicked()
 {
-    // This method is not needed since LoginWidget handles the login button
+    // This method is handled by LoginWidget
 }
 
 void MainWindow::onAuthenticationSuccessful(const QString &userId, const QString &email, const QString &idToken)
@@ -275,18 +363,20 @@ void MainWindow::onAuthenticationSuccessful(const QString &userId, const QString
     m_currentUserEmail = email;
     m_currentIdToken = idToken;
 
-    // Show main interface
+    qDebug() << "User authenticated successfully:" << email;
+
+    // Show main interface (not directly opening dashboard)
     showMainInterface();
 }
 
-void MainWindow::onAuthenticationFailed(const QString & /*errorMessage*/)
+void MainWindow::onAuthenticationFailed(const QString &errorMessage)
 {
-    // Error handling is done by LoginWidget
-    // This method can be used for additional error handling if needed
+    QMessageBox::warning(this, "Authentication Failed", errorMessage);
 }
 
-void MainWindow::setLoginState(bool /*isLoading*/)
+void MainWindow::setLoginState(bool isLoading)
 {
+    Q_UNUSED(isLoading)
     // Login state is handled by LoginWidget
 }
 
@@ -304,7 +394,6 @@ void MainWindow::showMainInterface()
     QStackedLayout *stackedLayout = qobject_cast<QStackedLayout*>(m_centralWidget->layout());
     if (stackedLayout) {
         // Update user info display
-        QString displayName = "User"; // You can get this from LoginWidget if needed
         m_userInfoLabel->setText(QString(R"(
             <b>Email:</b> %1<br>
             <b>User ID:</b> %2<br>
@@ -315,7 +404,7 @@ void MainWindow::showMainInterface()
                                      .arg(QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss")));
 
         stackedLayout->setCurrentWidget(m_mainWidget);
-        setWindowTitle("Cricket App - Dashboard");
+        setWindowTitle("Cricket App - Main");
     }
 }
 
@@ -325,6 +414,13 @@ void MainWindow::onLogoutButtonClicked()
     m_currentUserId.clear();
     m_currentUserEmail.clear();
     m_currentIdToken.clear();
+
+    // Close dashboard if open
+    if (m_dashboard) {
+        m_dashboard->close();
+        m_dashboard->deleteLater();
+        m_dashboard = nullptr;
+    }
 
     // Clear LoginWidget passwords for security
     if (m_loginWidget) {
@@ -349,6 +445,11 @@ void MainWindow::clearLoginForm()
 
 void MainWindow::applyStyles()
 {
-    // Set the main window background to transparent to show LoginWidget properly
     setStyleSheet("QMainWindow { background-color: #F0F0F0; }");
+}
+
+// Method to allow LoginWidget to access Firebase Auth
+FirebaseAuth* MainWindow::getFirebaseAuth() const
+{
+    return m_firebaseAuth;
 }

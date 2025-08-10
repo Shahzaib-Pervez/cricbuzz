@@ -5,20 +5,17 @@
 #include <QWidget>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
-#include <QFormLayout>
-#include <QStackedLayout>
 #include <QLabel>
 #include <QLineEdit>
 #include <QPushButton>
-#include <QMessageBox>
 #include <QProgressBar>
-#include <QFrame>
-#include <QDateTime>
-#include "firebaseauth.h"
-#include "loginwidget.h"  // Add this include
-
-QT_BEGIN_NAMESPACE
-QT_END_NAMESPACE
+#include <QStackedLayout>
+#include <QString>
+#include"dashboard.h"
+// Forward declarations
+class LoginWidget;
+class QTimer;
+class FirebaseAuth;  // Add this forward declaration
 
 class MainWindow : public QMainWindow
 {
@@ -27,30 +24,37 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
+    FirebaseAuth* getFirebaseAuth() const;  // Move this after the forward declaration
 
 private slots:
-    // Login functionality
     void onLoginButtonClicked();
     void onAuthenticationSuccessful(const QString &userId, const QString &email, const QString &idToken);
     void onAuthenticationFailed(const QString &errorMessage);
+    void onLogoutButtonClicked();
+    void showDashboardPlaceholder();
 
-    // UI state management
+private:
+    // Helper methods
+    void setupUI();
+    void setupLoginForm();
+    void setupMainInterface();
+    void setupFirebaseAuth();
     void setLoginState(bool isLoading);
     void showLoginForm();
     void showMainInterface();
-    void onLogoutButtonClicked();
-
-private:
+    bool validateLoginInput();
+    void clearLoginForm();
+    void applyStyles();
+    QWidget* createWindowControls();
+    void handleDashboardLogout();
     // UI Components
     QWidget *m_centralWidget;
     QVBoxLayout *m_mainLayout;
 
-    // Login widget (your existing beautiful UI)
+    // Login widget
     LoginWidget *m_loginWidget;
-
-    // Legacy login form components (not used but kept for compatibility)
     QVBoxLayout *m_loginLayout;
-    QFormLayout *m_loginFormLayout;
+    QVBoxLayout *m_loginFormLayout;
     QLabel *m_titleLabel;
     QLineEdit *m_emailLineEdit;
     QLineEdit *m_passwordLineEdit;
@@ -58,30 +62,24 @@ private:
     QProgressBar *m_loadingBar;
     QLabel *m_statusLabel;
 
-    // Main interface components (after login)
+    // Main interface (after login)
     QWidget *m_mainWidget;
     QVBoxLayout *m_mainInterfaceLayout;
     QLabel *m_welcomeLabel;
     QLabel *m_userInfoLabel;
     QPushButton *m_logoutButton;
 
-    // Firebase authentication
-    FirebaseAuth *m_firebaseAuth;
+    // Authentication - Use consistent type
+    FirebaseAuth *m_firebaseAuth;  // Changed from QObject* to FirebaseAuth*
 
     // User data
     QString m_currentUserId;
     QString m_currentUserEmail;
     QString m_currentIdToken;
+    Dashboard *m_dashboard; // Add this line
 
-    // Helper methods
-    void setupUI();
-    void setupLoginForm();
-    void setupMainInterface();
-    void setupFirebaseAuth();
-    bool validateLoginInput();
-    void clearLoginForm();
-    void applyStyles();
-    QWidget* createWindowControls(); // Add this method
+    // ... your existing private methods ...
+    void openDashboard();
 };
 
 #endif // MAINWINDOW_H
