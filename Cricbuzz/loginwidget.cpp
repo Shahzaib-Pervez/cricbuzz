@@ -193,7 +193,11 @@ void LoginForm::setupUI()
     formLayout->setSpacing(15);
     formLayout->addStretch(1);
 
+<<<<<<< HEAD
     QLabel *titleLabel = new QLabel("Sign in to Cricphy", this);
+=======
+    QLabel *titleLabel = new QLabel("Sign in to Cinephile", this);
+>>>>>>> a4ce4ea0f5a1005722be20c3afda11ecdfaa26df
     titleLabel->setObjectName("formTitle");
     titleLabel->setAlignment(Qt::AlignCenter);
     formLayout->addWidget(titleLabel);

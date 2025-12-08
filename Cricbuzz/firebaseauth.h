@@ -5,11 +5,15 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QJsonObject>
+<<<<<<< HEAD
 #include <QVBoxLayout>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include "matchinfo.h"
+=======
+
+>>>>>>> a4ce4ea0f5a1005722be20c3afda11ecdfaa26df
 class FirebaseAuth : public QObject
 {
     Q_OBJECT

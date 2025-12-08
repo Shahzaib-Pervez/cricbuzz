@@ -13,9 +13,12 @@
 #include <QFrame>
 #include <QDebug>
 #include <QMessageBox>
+<<<<<<< HEAD
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
+=======
+>>>>>>> a4ce4ea0f5a1005722be20c3afda11ecdfaa26df
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -315,7 +318,11 @@ void MainWindow::openDashboard()
     if (!m_dashboard) {
         // Create dashboard
         m_dashboard = new Dashboard();
+<<<<<<< HEAD
         // m_dashboard->setUserInfo(m_currentUserId, m_currentUserEmail);
+=======
+        m_dashboard->setUserInfo(m_currentUserId, m_currentUserEmail);
+>>>>>>> a4ce4ea0f5a1005722be20c3afda11ecdfaa26df
 
         // Connect dashboard logout signal
         connect(m_dashboard, &Dashboard::logoutRequested, this, [this]() {

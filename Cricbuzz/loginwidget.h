@@ -10,10 +10,14 @@
 #include <QFrame>
 #include <QPropertyAnimation>
 #include <QMouseEvent>
+<<<<<<< HEAD
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include "matchinfo.h"
+=======
+
+>>>>>>> a4ce4ea0f5a1005722be20c3afda11ecdfaa26df
 class FirebaseAuth;
 
 // Input field widget for email/password inputs

@@ -18,22 +18,30 @@ SOURCES += \
     mainwindow.cpp \
     loginwidget.cpp \
     firebaseauth.cpp \
+<<<<<<< HEAD
     dashboard.cpp \
     matchcard.cpp \
     matchdetails.cpp \
     recent.cpp \
     upcoming.cpp
+=======
+    dashboard.cpp
+>>>>>>> a4ce4ea0f5a1005722be20c3afda11ecdfaa26df
 
 HEADERS += \
     mainwindow.h \
     loginwidget.h \
     firebaseauth.h \
+<<<<<<< HEAD
     dashboard.h \
     matchcard.h \
     matchdetails.h \
     matchinfo.h \
     recent.h \
     upcoming.h
+=======
+    dashboard.h
+>>>>>>> a4ce4ea0f5a1005722be20c3afda11ecdfaa26df
 
 # Optional: For better organization
 INCLUDEPATH += .
