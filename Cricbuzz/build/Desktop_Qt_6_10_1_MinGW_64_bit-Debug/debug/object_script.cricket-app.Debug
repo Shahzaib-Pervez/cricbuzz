@@ -1,0 +1,17 @@
+debug/main.o
+debug/mainwindow.o
+debug/loginwidget.o
+debug/firebaseauth.o
+debug/dashboard.o
+debug/matchcard.o
+debug/matchdetails.o
+debug/recent.o
+debug/upcoming.o
+debug/moc_mainwindow.o
+debug/moc_loginwidget.o
+debug/moc_firebaseauth.o
+debug/moc_dashboard.o
+debug/moc_matchcard.o
+debug/moc_matchdetails.o
+debug/moc_recent.o
+debug/moc_upcoming.o

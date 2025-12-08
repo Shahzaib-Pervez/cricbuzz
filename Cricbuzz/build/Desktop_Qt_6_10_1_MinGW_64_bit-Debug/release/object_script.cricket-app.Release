@@ -1,0 +1,17 @@
+release/main.o
+release/mainwindow.o
+release/loginwidget.o
+release/firebaseauth.o
+release/dashboard.o
+release/matchcard.o
+release/matchdetails.o
+release/recent.o
+release/upcoming.o
+release/moc_mainwindow.o
+release/moc_loginwidget.o
+release/moc_firebaseauth.o
+release/moc_dashboard.o
+release/moc_matchcard.o
+release/moc_matchdetails.o
+release/moc_recent.o
+release/moc_upcoming.o
